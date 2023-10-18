@@ -1,9 +1,9 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
 # Create your views here.
 def feeds(request):
-    user = request.user
-    is_authenticated = user.is_authenticated
+    if not request.user.is_authenticated:
+        return redirect("/users/login")
 
 
 
