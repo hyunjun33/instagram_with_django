@@ -23,6 +23,7 @@ from config.views import index
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("users/", include("users.urls")), # users/urls.py를 추가
+    path("posts/", include("posts.urls")),
     path("", index)
 ]
 
