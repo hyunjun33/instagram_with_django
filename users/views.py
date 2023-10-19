@@ -1,4 +1,4 @@
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
 from users.forms import LoginForm
 
@@ -20,7 +20,7 @@ def login_view(request):
                 login(request, user)
                 return redirect("/posts/feeds/")
             else:
-                print("로그인에 실패했습니다")
+                form.add_error(None, "입력한 자격증명에 해당하는 사용자가 없습니다")
 
 
         context = {"form": form}
@@ -30,3 +30,8 @@ def login_view(request):
         form = LoginForm()
         context = {"form": form}
         return render(request, "users/login.html", context)
+
+
+def logout_view(request):
+    logout(request)
+    return redirect("/users/login/")
