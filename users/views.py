@@ -37,6 +37,15 @@ def logout_view(request):
     return redirect("/users/login/")
 
 def signup(request):
+    if request.method == "POST":
+        form = SignupForm(data=request.POST, files=request.FILES)
+        if form.is_valid():
+            username = form.cleaned_data["username"]
+            password1 = form.cleaned_data["password1"]
+            password2 = form.cleaned_data["password2"]
+            profile_image = form.cleaned_data["profile_image"]
+            short_description = form.cleaned_data["short_description"]
+
     form = SignupForm()
     context = {"form": form}
     return render(request, "users/signup.html", context)
