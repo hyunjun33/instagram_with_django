@@ -41,25 +41,15 @@ def signup(request):
     if request.method == "POST":
         form = SignupForm(data=request.POST, files=request.FILES)
         if form.is_valid():
-            username = form.cleaned_data["username"]
-            password1 = form.cleaned_data["password1"]
-            password2 = form.cleaned_data["password2"]
-            profile_image = form.cleaned_data["profile_image"]
-            short_description = form.cleaned_data["short_description"]
+            user = form.save()
+            login(request, user)
+            return redirect("/posts/feeds")
 
-            # 비밀번호와 비밀번호 확인의 값이 같은지 검사
-            if password1 != password2:
-                form.add_error("password2", "비밀번호와 비밀번호 확인란의 값이 다릅니다")
+        # Form에 에러가 있다면, 에러를 포함한 Form을 사용해 회원가입 페이지를 보여준다
 
-            # username을 사용 중인 User가 이미 있는지 검사
-            if User.objects.filter(username=username).exists():
-                form.add_error("username", "입력한 사용자명은 이미 사용 중입니다")
 
-            # 에러가 존재한다면, 에러를 포함한 form을 사용해 회원가입 페이지를 다시 렌더링
-            if form.errors:
-                context = {"form": form}
-                return render(request, "users/signup.html", context)
+    else:
+        form = SignupForm()
 
-    form = SignupForm()
     context = {"form": form}
     return render(request, "users/signup.html", context)
