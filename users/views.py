@@ -1,6 +1,7 @@
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
 from users.forms import LoginForm, SignupForm
+from users.models import User
 
 # Create your views here.
 def login_view(request):
@@ -45,6 +46,19 @@ def signup(request):
             password2 = form.cleaned_data["password2"]
             profile_image = form.cleaned_data["profile_image"]
             short_description = form.cleaned_data["short_description"]
+
+            # 비밀번호와 비밀번호 확인의 값이 같은지 검사
+            if password1 != password2:
+                form.add_error("password2", "비밀번호와 비밀번호 확인란의 값이 다릅니다")
+
+            # username을 사용 중인 User가 이미 있는지 검사
+            if User.objects.filter(username=username).exists():
+                form.add_error("username", "입력한 사용자명은 이미 사용 중입니다")
+
+            # 에러가 존재한다면, 에러를 포함한 form을 사용해 회원가입 페이지를 다시 렌더링
+            if form.errors:
+                context = {"form": form}
+                return render(request, "users/signup.html", context)
 
     form = SignupForm()
     context = {"form": form}
