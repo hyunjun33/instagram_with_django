@@ -43,7 +43,7 @@ def signup(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            return redirect("/posts/feeds")
+            return redirect("/posts/feeds/")
 
         # Form에 에러가 있다면, 에러를 포함한 Form을 사용해 회원가입 페이지를 보여준다
 

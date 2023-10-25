@@ -40,13 +40,11 @@ class SignupForm(forms.Form):
     def save(self):
         username = self.cleaned_data["username"]
         password1 = self.cleaned_data["password1"]
-        password2 = self.cleaned_data["password2"]
         profile_image = self.cleaned_data["short_description"]
         short_description = self.cleaned_data["short_description"]
         user = User.objects.create_user(
             username=username,
-            password1=password1,
-            password2=password2,
+            password=password1,
             profile_image=profile_image,
             short_description=short_description,
         )
