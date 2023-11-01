@@ -1,11 +1,12 @@
 {% extends 'base.html' %}
 {% block content %}
-    <nav>
+    <navbar>
         <h1>
-            <a href="/posts/feeds/">Instagram<a/>
+            <a href="{% url 'posts:feeds' %}">Instagram<a/>
         </h1>
-        <a href="/users/logout/">Logout</a>
-    </nav>
+        <a href="{% url 'posts:post_add' %}">Add post</a>
+        <a href="{% url 'users:logout' %}">Logout</a>
+    </navbar>
     <div id="feeds" class="post-container">
         <!-- 전달된 Post QuerySet 객체를 순회 -->
         {% for post in posts %}
@@ -39,7 +40,7 @@
 
                 <div class="post-buttons">
                     <button>Likes(0)</button>
-                    <span>Comments(0)</span>
+                    <span>Comments({{ post.comment_set.count }})</span>
                 </div>
 
                 <div class="post-comments">
@@ -48,6 +49,14 @@
                             <li>
                                 <span>{{ comment.user.username }}</span>
                                 <span>{{ comment.content }}</span>
+
+                                <!-- 댓글 삭제 Form 추가 -->
+                                {% if user == comment.user %}
+                                    <form method="POST" action="{% url 'posts:comment_delete' comment_id=comment.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit">삭제</button>
+                                    </form>
+                                {% endif %}
                             </li>
                         {% endfor %}
                     </ul>
@@ -56,7 +65,7 @@
                 <small>{{ post.created }}</small>
 
                 <div class="post-comment-create">
-                    <form method="POST" action="/posts/comment_add/">
+                    <form method="POST" action="{% url 'posts:comment_add' %}">
                         {% csrf_token %}
                         <!-- 사용자가 직업 입력하지 않는 고정된 데이터를 form 내부에 위치 -->
                         <input type="hidden" name="post" value="{{ post.id }}">

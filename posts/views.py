@@ -1,12 +1,14 @@
 from django.shortcuts import render, redirect
-from posts.models import Post
-from posts.forms import CommentForm
+from posts.models import Post, Comment, PostImage
+from posts.forms import CommentForm, PostForm
 from django.views.decorators.http import require_POST
+from django.http import HttpResponseRedirect, HttpResponseForbidden
+from django.urls import reverse
 
 # Create your views here.
 def feeds(request):
     if not request.user.is_authenticated:
-        return redirect("/users/login")
+        return redirect("users:login")
 
     # 모든 글 목록을 템플릿으로 전달
     posts = Post.objects.all()
@@ -33,10 +35,44 @@ def comment_add(request):
         # DB에 Comment 객체 저장
         comment.save()
 
-        # 생성된 Comment의 정보 확인
-        print(comment.id)
-        print(comment.content)
-        print(comment.user)
+        # 생성한 comment에서 연결된 post 정보를 가져와서 id값을 사용
+        url = reverse("posts:feeds") + f"#posts-{comment.post.id}"
+        return HttpResponseRedirect(url)
+        # return HttpResponseRedirect(f"/posts/feeds/#post-{comment.post.id}")
 
-        # 생성 완료 후에는 피드 페이지로 다시 이동
-        return redirect("/posts/feeds/")
+@require_POST
+def comment_delete(request, comment_id):
+    comment = Comment.objects.get(id=comment_id)
+    if comment.user == request.user:
+        comment.delete()
+
+        url = reverse("posts/feeds") + f"#post-{comment.post.id}"
+        return HttpResponseRedirect(url)
+        # return HttpResponseRedirect(f"/posts/feeds/#post-{comment.post.id}")
+    else:
+        return HttpResponseForbidden("이 댓글을 삭제할 권한이 없습니다")
+
+
+def post_add(request):
+    if request.method == "POST":
+        form = PostForm(request.POST)
+
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.user = request.user
+            post.save()
+
+            for image_file in request.FILES.getlist("images"):
+                PostImage.objects.create(
+                    post=post,
+                    photo=image_file,
+                )
+
+            url = reverse("posts:feeds") + f"#post-{post.id}"
+            # url = f"/posts/feeds/#post-{post.id}"
+            return HttpResponseRedirect(url)
+    else:
+        form = PostForm()
+
+    context = {"form": form}
+    return render(request, "posts/post_add.html", context)
