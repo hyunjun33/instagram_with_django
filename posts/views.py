@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from posts.models import Post, Comment, PostImage
+from posts.models import Post, Comment, PostImage, HashTag
 from posts.forms import CommentForm, PostForm
 from django.views.decorators.http import require_POST
 from django.http import HttpResponseRedirect, HttpResponseForbidden
@@ -62,11 +62,20 @@ def post_add(request):
             post.user = request.user
             post.save()
 
+            # "images"에 전달된 여러 장의 이미지 파일로 각각의 PostImage 생성
             for image_file in request.FILES.getlist("images"):
                 PostImage.objects.create(
                     post=post,
                     photo=image_file,
                 )
+
+            # "tags"에 전달된 문자열을 분리해 HashTag 생성
+            tag_string = request.POST.get("tags")
+            if tag_string:
+                tag_names = [tag_name.strip() for tag_name in tag_string.split(",")]
+                for tag_name in tag_names:
+                    tag, _ = HashTag.objects.get_or_create(name=tag_name)
+                    post.tags.add(tag)
 
             url = reverse("posts:feeds") + f"#post-{post.id}"
             # url = f"/posts/feeds/#post-{post.id}"
@@ -76,3 +85,19 @@ def post_add(request):
 
     context = {"form": form}
     return render(request, "posts/post_add.html", context)
+
+
+def tags(request, tag_name):
+    try:
+        tag = HashTag.objects.get(name=tag_name)
+    except HashTag.DoesNotExist:
+        posts = Post.objects.none()
+    else:
+        posts = Post.objects.filter(tags=tag)
+
+    context = {
+        "tag_name": tag_name,
+        "posts": posts,
+    }
+
+    return render(request, "posts/tags.html", context)
