@@ -2,10 +2,7 @@
 {% block content %}
     {% include "nav.html" %}
     <div id="feeds" class="post-container">
-        <!-- 전달된 Post QuerySet 객체를 순회 -->
-        {% for post in posts %}
-            {% include "posts/post.html" %}
-        {% endfor %}
+            {% include 'posts/post.html' %}
     </div>
 
     <!-- content 블록의 최하단에 작성한다 -->
